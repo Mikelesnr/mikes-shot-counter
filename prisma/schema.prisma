@@ -1,0 +1,61 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Shop {
+  id             String       @id @default(cuid())
+  name           String
+  shooterSize    Float        @default(25.0) // in ml (e.g., 25ml or 30ml)
+  standardPrice  Float        @default(29.99)
+  customPrice    Float?       // Overrides standardPrice if set by Admin
+  isPaid         Boolean      @default(false)
+  nextBillingDue DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  users          User[]
+  bottles        Bottle[]
+  pinAttempts    PinAttempt[]
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String?      @unique // Required for Admin, Owner, Manager; optional for Staff
+  name         String
+  passwordHash String?      // Used for password login (Admin, Owner, initial Manager)
+  pinHash      String?      // 4-digit PIN hashed for terminal login (Manager & Staff)
+  role         String       // Managed via TypeScript UserRole enum: 'ADMIN' | 'OWNER' | 'MANAGER' | 'STAFF'
+  shopId       String?
+  shop         Shop?        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  pinAttempts  PinAttempt[]
+}
+
+model Bottle {
+  id          String   @id @default(cuid())
+  name        String
+  volume      Float    // Total liquid volume in ml (e.g., 750)
+  fullMass    Float    // Stored as fullMass in DB, labeled "Full Weight (g)" in UI
+  emptyMass   Float    // Stored as emptyMass in DB, labeled "Empty Weight (g)" in UI
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  updatedAt   DateTime @updatedAt
+}
+
+model PinAttempt {
+  id          String   @id @default(cuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  targetRole  String?  // Records if the attempted PIN matched a Manager's PIN or failed completely
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  enteredPin  String   // Masked or logged so management can see if a manager code was targeted
+  success     Boolean
+  createdAt   DateTime @default(now())
+}
