@@ -24,8 +24,8 @@ export function calculateRemainingShots({
   const shots = remainingMl / shooterSize;
 
   return {
-    shots: Number(shots.toFixed(2)),
+    shots: Math.floor(shots),
     remainingMl: Number(remainingMl.toFixed(1)),
-    percentage: Math.round(ratio * 100),
+    percentage: Math.floor(ratio * 100),
   };
 }

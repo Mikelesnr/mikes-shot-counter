@@ -1,18 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
-  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
+  // bcryptjs is pure JS, but keeping it external avoids bundling quirks in serverless functions.
+  serverExternalPackages: ['bcryptjs'],
 };
 
 export default nextConfig;

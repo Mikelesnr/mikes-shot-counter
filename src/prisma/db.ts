@@ -1,15 +1,25 @@
-import { PrismaClient } from '../../prisma/generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import postgres from '@prisma/orm-postgres/runtime';
+import { contractFromJson } from '@prisma/orm-postgres/static';
+import type { Contract } from './contract.d';
+import contractJson from './contract.json' with { type: 'json' };
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+export const contract = contractFromJson<Contract>(contractJson);
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+type Db = ReturnType<typeof createDb>;
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({ adapter });
+function createDb() {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL is not set. Add it to .env locally or to your Netlify site environment variables.');
+  }
+  return postgres({
+    contract,
+    url,
+    poolOptions: { connectionTimeoutMillis: 20_000, idleTimeoutMillis: 10_000 },
+  });
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// One client per server instance. In dev, hot reloads would otherwise leak a pool each time.
+const globalForDb = globalThis as unknown as { __mscDb?: Db };
+
+export const db: Db = globalForDb.__mscDb ?? (globalForDb.__mscDb = createDb());

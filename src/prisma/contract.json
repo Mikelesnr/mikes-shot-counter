@@ -65,7 +65,7 @@
               "updatedAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
@@ -131,7 +131,7 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
@@ -248,7 +248,7 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
@@ -286,11 +286,18 @@
               "nextBillingDue": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
                   }
+                }
+              },
+              "ownerId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
                 }
               },
               "shooterSize": {
@@ -310,7 +317,7 @@
               "updatedAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
@@ -331,6 +338,22 @@
                 },
                 "to": {
                   "model": "Bottle",
+                  "namespace": "public"
+                }
+              },
+              "owner": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "ownerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
                   "namespace": "public"
                 }
               },
@@ -385,6 +408,9 @@
                 "nextBillingDue": {
                   "column": "nextBillingDue"
                 },
+                "ownerId": {
+                  "column": "ownerId"
+                },
                 "shooterSize": {
                   "column": "shooterSize"
                 },
@@ -404,7 +430,7 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamp-date@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar",
                   "typeParams": {
                     "precision": 3
@@ -462,6 +488,21 @@
               }
             },
             "relations": {
+              "ownedShops": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "ownerId"
+                  ]
+                },
+                "to": {
+                  "model": "Shop",
+                  "namespace": "public"
+                }
+              },
               "pinAttempts": {
                 "cardinality": "1:N",
                 "on": {
@@ -562,8 +603,8 @@
                   "nullable": false
                 },
                 "updatedAt": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "nullable": false,
                   "typeParams": {
                     "precision": 3
@@ -577,6 +618,9 @@
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "Bottle_shopId_idx_e9207c6b"
+                  },
                   "onDelete": "cascade",
                   "onUpdate": "cascade",
                   "source": {
@@ -595,7 +639,16 @@
                   }
                 }
               ],
-              "indexes": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "shopId"
+                  ],
+                  "name": "Bottle_shopId_idx_e9207c6b",
+                  "prefix": "Bottle_shopId_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -606,8 +659,8 @@
             "PinAttempt": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -650,6 +703,9 @@
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "PinAttempt_shopId_idx_e9207c6b"
+                  },
                   "onDelete": "cascade",
                   "onUpdate": "cascade",
                   "source": {
@@ -668,6 +724,9 @@
                   }
                 },
                 {
+                  "index": {
+                    "name": "PinAttempt_userId_idx_a489d58a"
+                  },
                   "onDelete": "setNull",
                   "onUpdate": "cascade",
                   "source": {
@@ -686,7 +745,24 @@
                   }
                 }
               ],
-              "indexes": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "shopId"
+                  ],
+                  "name": "PinAttempt_shopId_idx_e9207c6b",
+                  "prefix": "PinAttempt_shopId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "PinAttempt_userId_idx_a489d58a",
+                  "prefix": "PinAttempt_userId_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -697,8 +773,8 @@
             "Shop": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -733,8 +809,8 @@
                   "nullable": false
                 },
                 "nextBillingDue": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -743,6 +819,11 @@
                   "typeParams": {
                     "precision": 3
                   }
+                },
+                "ownerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "shooterSize": {
                   "codecId": "pg/float8@1",
@@ -763,16 +844,47 @@
                   "nullable": false
                 },
                 "updatedAt": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "nullable": false,
                   "typeParams": {
                     "precision": 3
                   }
                 }
               },
-              "foreignKeys": [],
-              "indexes": [],
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "Shop_ownerId_idx_e2d0c1ef"
+                  },
+                  "onDelete": "setNull",
+                  "onUpdate": "cascade",
+                  "source": {
+                    "columns": [
+                      "ownerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Shop"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "ownerId"
+                  ],
+                  "name": "Shop_ownerId_idx_e2d0c1ef",
+                  "prefix": "Shop_ownerId_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -783,8 +895,8 @@
             "User": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamp-date@1",
-                  "dataType": "pg/timestamp",
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -832,6 +944,9 @@
               },
               "foreignKeys": [
                 {
+                  "index": {
+                    "name": "User_shopId_idx_e9207c6b"
+                  },
                   "onDelete": "cascade",
                   "onUpdate": "cascade",
                   "source": {
@@ -853,10 +968,11 @@
               "indexes": [
                 {
                   "columns": [
-                    "email"
+                    "shopId"
                   ],
-                  "name": "User_email_key",
-                  "unique": true
+                  "name": "User_shopId_idx_e9207c6b",
+                  "prefix": "User_shopId_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -864,7 +980,13 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "email"
+                  ]
+                }
+              ]
             }
           }
         },
@@ -872,15 +994,15 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1b1ef5caf54d46417a23e20089a47071d3de523c7c29706892cd51cc9ef9b0b9"
+    "storageHash": "87ee9563acec872eadbf9dcc1195696339bb5fe56f45394cf8e4fbc4be4fd1db"
   },
   "execution": {
-    "executionHash": "19aa2f81ac13089e886cbc32d831a157da51de2469b11cbaf2c4d04f6f664cb5",
+    "executionHash": "2864ca5a3132f0f03f3afd5a48b6b83861fb0587de997ec7f87f8be1cd24e36f",
     "mutations": {
       "defaults": [
         {
           "onCreate": {
-            "id": "cuid2",
+            "id": "uuidv7",
             "kind": "generator"
           },
           "ref": {
@@ -912,21 +1034,7 @@
         },
         {
           "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator",
-            "params": {
-              "precision": 3
-            }
-          },
-          "ref": {
-            "entry": "PinAttempt",
-            "field": "createdAt",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "cuid2",
+            "id": "uuidv7",
             "kind": "generator"
           },
           "ref": {
@@ -937,40 +1045,12 @@
         },
         {
           "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator",
-            "params": {
-              "precision": 3
-            }
-          },
-          "ref": {
-            "entry": "Shop",
-            "field": "createdAt",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "cuid2",
+            "id": "uuidv7",
             "kind": "generator"
           },
           "ref": {
             "entry": "Shop",
             "field": "id",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator",
-            "params": {
-              "precision": 3
-            }
-          },
-          "ref": {
-            "entry": "Shop",
-            "field": "nextBillingDue",
             "namespace": "public"
           }
         },
@@ -997,21 +1077,7 @@
         },
         {
           "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator",
-            "params": {
-              "precision": 3
-            }
-          },
-          "ref": {
-            "entry": "User",
-            "field": "createdAt",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "cuid2",
+            "id": "uuidv7",
             "kind": "generator"
           },
           "ref": {
