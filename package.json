@@ -4,36 +4,41 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "prisma contract emit",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate",
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "db:update": "prisma db update",
+    "db:seed": "tsx prisma/seed.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.1",
-    "@prisma/client": "^7.10.1",
+    "@prisma/orm-postgres": "8.0.0-rc.23",
     "@tailwindcss/postcss": "^4.3.5",
-    "@tailwindcss/turbopack": "^4.3.5",
     "bcryptjs": "^3.0.3",
-    "dotenv": "^18.0.10",
+    "jose": "^6.2.17",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.72.0",
     "next": "16.4.6",
-    "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
-  },
-  "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "temporal-polyfill": "1.0.8",
+    "prisma": "8.0.0-rc.33",
+    "typescript": "^5",
+    "tailwindcss": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "tsx": "4.23.15",
+    "dotenv": "^18.0.10"
+  },
+  "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.4.6",
-    "prisma": "^7.10.1",
-    "tailwindcss": "^4.3.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "eslint-config-next": "16.4.6"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

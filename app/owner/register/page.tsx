@@ -33,6 +33,7 @@ export default function OwnerRegisterPage() {
       }
 
       router.push('/owner');
+      router.refresh();
     } catch {
       setLoading(false);
       setError('Network error. Please try again.');
@@ -40,10 +41,10 @@ export default function OwnerRegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <div className="min-h-[calc(100dvh-4rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
 
-      <div className="w-full max-w-md relative z-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-2xl space-y-6">
+      <div className="w-full max-w-md relative z-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-8 shadow-2xl space-y-6">
         <div className="space-y-2 text-center">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
             <Building2 className="w-6 h-6" />
@@ -73,10 +74,11 @@ export default function OwnerRegisterPage() {
               <input
                 type="text"
                 required
+                autoComplete="name"
                 placeholder="e.g. Alex Ncube"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:border-amber-500 outline-none text-sm transition"
+                className="input pl-10"
               />
             </div>
           </div>
@@ -90,10 +92,12 @@ export default function OwnerRegisterPage() {
               <input
                 type="email"
                 required
+                autoComplete="email"
+                inputMode="email"
                 placeholder="owner@venue.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:border-amber-500 outline-none text-sm transition"
+                className="input pl-10"
               />
             </div>
           </div>
@@ -107,11 +111,12 @@ export default function OwnerRegisterPage() {
               <input
                 type="password"
                 required
-                minLength={6}
-                placeholder="Minimum 6 characters"
+                autoComplete="new-password"
+                minLength={8}
+                placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:border-amber-500 outline-none text-sm transition"
+                className="input pl-10"
               />
             </div>
           </div>
@@ -119,7 +124,7 @@ export default function OwnerRegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+            className="btn-primary w-full"
           >
             <span>{loading ? 'Creating Account...' : 'Create Owner Account'}</span>
             <ArrowRight className="w-4 h-4" />

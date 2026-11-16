@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { ROLE_HOME } from '@/types/roles';
 import { jsPDF } from 'jspdf';
 import {
   KeyRound,
@@ -56,6 +58,7 @@ const GUIDES: GuideSection[] = [
 ];
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [openId, setOpenId] = useState<string | null>('using-shot-counter');
 
   const downloadPdf = (guide: GuideSection) => {
@@ -84,7 +87,7 @@ export default function HomePage() {
     <div className="flex flex-col text-slate-900 dark:text-slate-100">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800/80 bg-gradient-to-b from-amber-50/70 via-white to-slate-50 dark:from-amber-950/15 dark:via-slate-950 dark:to-slate-950">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-24 relative">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-500/15 border border-amber-300 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-bold">
@@ -92,7 +95,7 @@ export default function HomePage() {
                 <span>Gravimetric Bar Inventory & Shrinkage Control</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-white">
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-white">
                 Stop Guessing Pour Counts.{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-500">
                   Weigh Every Drop.
@@ -103,22 +106,33 @@ export default function HomePage() {
                 Built for bar owners and managers who want exact shot counts in seconds—with locked tare weights, instant 4-digit staff PIN terminals, and failed-PIN audit alerts.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold shadow-lg shadow-amber-500/25 transition"
-                >
-                  <KeyRound className="w-4 h-4" />
-                  Open Bar Terminal / Sign In
-                </Link>
-
-                <Link
-                  href="/owner/register"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 font-semibold shadow-xs transition"
-                >
-                  <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  Register as Shop Owner
-                </Link>
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 pt-2">
+                {user ? (
+                  <Link
+                    href={ROLE_HOME[user.role]}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold shadow-lg shadow-amber-500/25 transition"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    Open my dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold shadow-lg shadow-amber-500/25 transition"
+                    >
+                      <KeyRound className="w-4 h-4" />
+                      Open Bar Terminal / Sign In
+                    </Link>
+                    <Link
+                      href="/owner/register"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 font-semibold shadow-xs transition"
+                    >
+                      <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      Register as Shop Owner
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
@@ -144,7 +158,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5 text-center">
+                <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                     <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
                       Full Weight
@@ -176,7 +190,7 @@ export default function HomePage() {
                   <span className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-400 font-bold">
                     Exact Shots Remaining
                   </span>
-                  <div className="text-5xl font-black text-slate-900 dark:text-white">15.0</div>
+                  <div className="text-5xl font-black text-slate-900 dark:text-white tabular-nums">15.0</div>
                   <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
                     375.0 ml remaining • 50% bottle capacity
                   </p>
@@ -188,7 +202,7 @@ export default function HomePage() {
       </section>
 
       {/* Feature Highlights */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <div className="grid md:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
             <div className="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center">
@@ -243,7 +257,7 @@ export default function HomePage() {
               >
                 <button
                   onClick={() => setOpenId(isOpen ? null : guide.id)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                  className="w-full flex items-center justify-between p-4 sm:p-6 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer"
                 >
                   <div className="space-y-1 pr-4">
                     <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
@@ -258,7 +272,7 @@ export default function HomePage() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-6 pb-6 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
+                  <div className="px-4 sm:px-6 pb-6 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
                     <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
                       {guide.steps.map((step, i) => (
                         <li key={i} className="flex items-start gap-2.5 leading-relaxed">

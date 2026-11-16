@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1b1ef5caf54d46417a23e20089a47071d3de523c7c29706892cd51cc9ef9b0b9'>;
+  StorageHashBase<'87ee9563acec872eadbf9dcc1195696339bb5fe56f45394cf8e4fbc4be4fd1db'>;
 export type ExecutionHash =
-  ExecutionHashBase<'19aa2f81ac13089e886cbc32d831a157da51de2469b11cbaf2c4d04f6f664cb5'>;
+  ExecutionHashBase<'2864ca5a3132f0f03f3afd5a48b6b83861fb0587de997ec7f87f8be1cd24e36f'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -339,13 +339,15 @@ export namespace Models {
     isPaid: FieldOutputTypes['public']['Shop']['isPaid'];
     name: FieldOutputTypes['public']['Shop']['name'];
     nextBillingDue: FieldOutputTypes['public']['Shop']['nextBillingDue'];
+    ownerId: FieldOutputTypes['public']['Shop']['ownerId'];
     shooterSize: FieldOutputTypes['public']['Shop']['shooterSize'];
     standardPrice: FieldOutputTypes['public']['Shop']['standardPrice'];
     updatedAt: FieldOutputTypes['public']['Shop']['updatedAt'];
     bottles: public_Bottle[];
+    owner: public_User | null;
     pinAttempts: public_PinAttempt[];
     users: public_User[];
-    readonly [RelationKeys]?: 'bottles' | 'pinAttempts' | 'users';
+    readonly [RelationKeys]?: 'bottles' | 'owner' | 'pinAttempts' | 'users';
   };
   export type public_User = {
     createdAt: FieldOutputTypes['public']['User']['createdAt'];
@@ -356,9 +358,10 @@ export namespace Models {
     pinHash: FieldOutputTypes['public']['User']['pinHash'];
     role: FieldOutputTypes['public']['User']['role'];
     shopId: FieldOutputTypes['public']['User']['shopId'];
+    ownedShops: public_Shop[];
     pinAttempts: public_PinAttempt[];
     shop: public_Shop | null;
-    readonly [RelationKeys]?: 'pinAttempts' | 'shop';
+    readonly [RelationKeys]?: 'ownedShops' | 'pinAttempts' | 'shop';
   };
 }
 
@@ -422,8 +425,8 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly updatedAt: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -437,7 +440,14 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
-              indexes: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'Bottle_shopId_idx_e9207c6b';
+                  readonly prefix: 'Bottle_shopId_idx';
+                  readonly columns: readonly ['shopId'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -456,8 +466,8 @@ type ContractBase = Omit<
             readonly PinAttempt: {
               columns: {
                 readonly createdAt: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -502,7 +512,20 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
-              indexes: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'PinAttempt_shopId_idx_e9207c6b';
+                  readonly prefix: 'PinAttempt_shopId_idx';
+                  readonly columns: readonly ['shopId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'PinAttempt_userId_idx_a489d58a';
+                  readonly prefix: 'PinAttempt_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [
                 {
                   readonly source: {
@@ -533,8 +556,8 @@ type ContractBase = Omit<
             readonly Shop: {
               columns: {
                 readonly createdAt: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -569,11 +592,17 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly nextBillingDue: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly ownerId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly shooterSize: {
@@ -597,8 +626,8 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly updatedAt: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -606,14 +635,34 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
-              indexes: readonly [];
-              foreignKeys: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'Shop_ownerId_idx_e2d0c1ef';
+                  readonly prefix: 'Shop_ownerId_idx';
+                  readonly columns: readonly ['ownerId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Shop';
+                    readonly columns: readonly ['ownerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly User: {
               columns: {
                 readonly createdAt: {
-                  readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -663,12 +712,13 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['email'] }];
               indexes: readonly [
                 {
-                  readonly name: 'User_email_key';
-                  readonly columns: readonly ['email'];
-                  readonly unique: true;
+                  readonly name: 'User_shopId_idx_e9207c6b';
+                  readonly prefix: 'User_shopId_idx';
+                  readonly columns: readonly ['shopId'];
+                  readonly unique: false;
                 },
               ];
               foreignKeys: readonly [
@@ -735,7 +785,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -775,7 +825,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -844,7 +894,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -868,9 +918,13 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
+              };
+              readonly ownerId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly shooterSize: {
                 readonly nullable: false;
@@ -884,7 +938,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -899,6 +953,15 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['shopId'];
+                };
+              };
+              readonly owner: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['ownerId'];
+                  readonly targetFields: readonly ['id'];
                 };
               };
               readonly pinAttempts: {
@@ -931,6 +994,7 @@ type ContractBase = Omit<
                 readonly isPaid: { readonly column: 'isPaid' };
                 readonly name: { readonly column: 'name' };
                 readonly nextBillingDue: { readonly column: 'nextBillingDue' };
+                readonly ownerId: { readonly column: 'ownerId' };
                 readonly shooterSize: { readonly column: 'shooterSize' };
                 readonly standardPrice: { readonly column: 'standardPrice' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -943,7 +1007,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-date@1';
+                  readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -977,6 +1041,14 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly ownedShops: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Shop' };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['ownerId'];
+                };
+              };
               readonly pinAttempts: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1051,7 +1123,7 @@ type ContractBase = Omit<
     readonly mutations: {
       readonly defaults: readonly [
         {
-          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Bottle';
             readonly field: 'id';
@@ -1076,19 +1148,7 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: {
-            readonly id: 'timestampNow';
-            readonly kind: 'generator';
-            readonly params: { readonly precision: 3 };
-          };
-          readonly ref: {
-            readonly entry: 'PinAttempt';
-            readonly field: 'createdAt';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'PinAttempt';
             readonly field: 'id';
@@ -1096,34 +1156,10 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: {
-            readonly id: 'timestampNow';
-            readonly kind: 'generator';
-            readonly params: { readonly precision: 3 };
-          };
-          readonly ref: {
-            readonly entry: 'Shop';
-            readonly field: 'createdAt';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Shop';
             readonly field: 'id';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: {
-            readonly id: 'timestampNow';
-            readonly kind: 'generator';
-            readonly params: { readonly precision: 3 };
-          };
-          readonly ref: {
-            readonly entry: 'Shop';
-            readonly field: 'nextBillingDue';
             readonly namespace: 'public';
           };
         },
@@ -1145,19 +1181,7 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: {
-            readonly id: 'timestampNow';
-            readonly kind: 'generator';
-            readonly params: { readonly precision: 3 };
-          };
-          readonly ref: {
-            readonly entry: 'User';
-            readonly field: 'createdAt';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'User';
             readonly field: 'id';

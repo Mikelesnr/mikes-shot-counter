@@ -1,6 +1,6 @@
 [build]
-  command = "npx prisma generate && npm run build"
-  publish = ".next"
+  command = "npm run build"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[build.environment]
+  NODE_VERSION = "24"
+  # Next.js on Netlify is detected and deployed automatically (no plugin entry or publish dir needed).

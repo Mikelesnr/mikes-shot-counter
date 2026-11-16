@@ -1,0 +1,59 @@
+// use prisma-8
+
+model Shop {
+  id             String       @id @onCreate(uuid(7))
+  name           String
+  shooterSize    Float        @default(25.0)
+  standardPrice  Float        @default(29.99)
+  customPrice    Float?
+  isPaid         Boolean      @default(false)
+  nextBillingDue DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @onCreate(now()) @onUpdate(now())
+
+  // The Owner account that created this shop. Null for shops created before owners were tracked.
+  ownerId        String?
+  owner          User?        @relation("ShopOwner", fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  users          User[]      @relation("ShopMembers")
+  bottles        Bottle[]
+  pinAttempts    PinAttempt[]
+}
+
+model User {
+  id           String       @id @onCreate(uuid(7))
+  email        String?      @unique
+  name         String
+  passwordHash String?
+  pinHash      String?
+  role         String
+  shopId       String?
+  shop         Shop?        @relation("ShopMembers", fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt    DateTime     @default(now())
+
+  ownedShops   Shop[]       @relation("ShopOwner")
+  pinAttempts  PinAttempt[]
+}
+
+model Bottle {
+  id        String   @id @onCreate(uuid(7))
+  name      String
+  volume    Float
+  fullMass  Float
+  emptyMass Float
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updatedAt DateTime @onCreate(now()) @onUpdate(now())
+}
+
+model PinAttempt {
+  id         String   @id @onCreate(uuid(7))
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  targetRole String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  enteredPin String
+  success    Boolean
+  createdAt  DateTime @default(now())
+}
