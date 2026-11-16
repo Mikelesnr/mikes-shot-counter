@@ -32,3 +32,12 @@ UPDATE "Shop" SET "ownerId" = '<owner user id>' WHERE "ownerId" IS NULL;
 - Wrong role is redirected to their own home page. Not signed in goes to /login.
 - /owner/register stays public.
 - Sessions are signed (HS256) cookies, so they cannot be edited by hand.
+
+## Deploying to Netlify or Vercel
+Set these environment variables for the production environment (and for Functions/runtime, not only Build):
+- DATABASE_URL  for Supabase use the POOLER string (Project Settings > Database > Connection pooling), the transaction pooler on port 6543. Do not use the "direct connection" host (db.xxxx.supabase.co): it is IPv6 only and Netlify/Vercel cannot reach it.
+- SESSION_SECRET  32+ random characters. Without it every login fails with a 500 in production.
+- Redeploy after changing environment variables.
+
+After deploying, open /api/health on your site. It tells you which of the above is wrong, without showing any secret values.
+Run `npx prisma db update` once against the Supabase database using the DIRECT or session pooler string (migrations need a normal connection, so run it from your computer with DATABASE_URL pointed at it).
