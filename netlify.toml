@@ -4,4 +4,3 @@
 [build.environment]
   NODE_VERSION = "24"
   # Next.js on Netlify is detected and deployed automatically (no plugin entry or publish dir needed).
-  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL"
